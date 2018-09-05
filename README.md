@@ -5,6 +5,7 @@ This is my first attempt at creating a game on a html5 with javascript.
 If you want to clone the game code itself, please feel free to clone this repository:
 
 1. git clone "https://github.com/grizzlycodescat/Vortex.git"
+2. Check out the branch "Vortex_Game"
 2. npm install
 3. npm start
 
