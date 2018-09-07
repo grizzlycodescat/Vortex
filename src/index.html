@@ -7,10 +7,18 @@
         body {
             margin: 0;
         }
+
+        video {
+            height: 100vh;
+            width: 100%;
+            object-fit: fill;
+            position: absolute;
+            z-index: -1;
+      }
     </style>
 </head>
 <body>
-    <video src="./assets/video/Space Time Vortex loop.mp4"></video>
+    <video id="video" src="./assets/video/Space Time Vortex loop.mp4" autoplay loop></video>
     <canvas></canvas>
 </body>
 </html>

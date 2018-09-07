@@ -1,5 +1,6 @@
 function randomIntFromRange(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min)
+    var number = (Math.random() * (max - min + 1) + min)
+    return number.toFixed(1)
 }
 
 function randomColor(colors) {
@@ -14,3 +15,4 @@ function distance(x1, y1, x2, y2) {
 }
 
 module.exports = { randomIntFromRange, randomColor, distance }
+

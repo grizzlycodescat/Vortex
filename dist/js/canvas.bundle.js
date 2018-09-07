@@ -104,9 +104,13 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var canvas = document.querySelector('canvas');
 var c = canvas.getContext('2d');
+// const video = document.getElementById('video');
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+var centerX = canvas.width / 2;
+var centerY = canvas.height / 2;
 
 var mouse = {
     x: innerWidth / 2,
@@ -116,9 +120,29 @@ var mouse = {
 var colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
 
 // Event Listeners
+
+// Mouse Movement
 addEventListener('mousemove', function (event) {
     mouse.x = event.clientX;
     mouse.y = event.clientY;
+});
+
+//Keyboard directions
+var d = void 0;
+addEventListener("keydown", function (event) {
+    switch (event.which || event.keyCode) {
+        case 37:
+            d = "LEFT";
+            break;
+        case 39:
+            d = "RIGHT";
+            break;
+        case 32:
+            d = "SPACE";
+            break;
+        default:
+            break;
+    }
 });
 
 addEventListener('resize', function () {
@@ -128,34 +152,124 @@ addEventListener('resize', function () {
     init();
 });
 
-// Objects
-function Object(x, y, radius, color) {
+// Player's particle
+function Particle(x, y, radius, color) {
+    var _this = this;
+
     this.x = x;
     this.y = y;
     this.radius = radius;
     this.color = color;
+    this.radians = 0;
+    this.cosRadians = Math.PI;
+    this.velocity = 0.07;
+
+    this.draw = function () {
+        c.beginPath();
+        c.arc(_this.x, _this.y, _this.radius, 0, Math.PI * 2, false);
+        c.fillStyle = _this.color;
+        c.fill();
+        c.closePath();
+    };
+
+    //Move point using mouse
+    // this.update = () => {
+    //     //Move points in relation to time
+    //     // this.radians += this.velocity;
+    //     // this.x = mouse.x + Math.cos(this.radians) * 100;
+    //     // this.y = mouse.y + Math.sin(this.radians) * 100;
+    //     this.x = mouse.x
+    //     this.y = mouse.y
+    //     // console.log(Math.cos(this.radians) * 100);
+
+    //     this.draw()
+    // }
+
+    //Point moves on its own
+    // this.update = () => {
+    //     //Move points in relation to time
+    //     this.radians += this.velocity;
+    //     this.x = x + Math.cos(this.radians) * 100;
+    //     this.y = y + Math.sin(this.radians) * 100;
+
+    //     // console.log(Math.cos(this.radians) * 100);
+
+    //     this.draw()
+    // }
+
+    //Move player's ship with keyboard
+    // Can use the same logic for gyroscope
+    this.update = function () {
+        if (d == "LEFT") {
+            _this.radians -= _this.velocity;
+            _this.x = x + Math.sin(_this.radians) * 180;
+            _this.y = centerY + Math.cos(_this.radians) * 180;
+        } else if (d == "RIGHT") {
+            _this.radians += _this.velocity;
+            _this.x = x + Math.sin(_this.radians) * 180;
+            _this.y = centerY + Math.cos(_this.radians) * 180;
+        } else if (d == "SPACE") {
+            _this.x;
+            _this.y;
+        }
+        _this.draw();
+    };
 }
 
-Object.prototype.draw = function () {
-    c.beginPath();
-    c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    c.fillStyle = this.color;
-    c.fill();
-    c.closePath();
-};
+//Enemy squishys
+function Squishy(x, y, radius, color, isOutOfBounds) {
+    var _this2 = this;
 
-Object.prototype.update = function () {
-    this.draw();
-};
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.color = color;
+    this.velocity = _utils2.default.randomIntFromRange(0.2, 0.5);
+    this.radiansX = Math.cos(_utils2.default.randomIntFromRange(-Math.PI, Math.PI)) * (Math.PI * 2);
+    this.radiansY = Math.sin(_utils2.default.randomIntFromRange(-Math.PI, Math.PI)) * (Math.PI * 2);
+    this.isTrue = isOutOfBounds;
 
-// Implementation
-var objects = void 0;
-function init() {
-    objects = [];
+    this.draw = function () {
+        c.beginPath();
+        c.arc(_this2.x, _this2.y, _this2.radius, 0, Math.PI * 2, false);
+        c.fillStyle = _this2.color;
+        c.fill();
+        c.closePath();
+    };
 
-    for (var i = 0; i < 400; i++) {
-        // objects.push();
+    //linear movement along x,y
+    this.update = function () {
+        _this2.x += _this2.radiansX * _this2.velocity;
+        _this2.y += _this2.radiansY * _this2.velocity;
+        _this2.draw();
+    };
+
+    this.checkBoundary = function () {
+        if (_this2.x >= 0 && _this2.x <= canvas.width && _this2.y >= 0 && _this2.y <= canvas.height) {
+            _this2.isTrue = false;
+        } else {
+            _this2.isTrue = true;
+        }
+    };
+}
+
+// Implementation for user's and enemy's cigarette squishy things
+var ship = void 0,
+    enemies = void 0;
+
+function initEnemies() {
+    enemies = [];
+    for (var i = 0; i < _utils2.default.randomIntFromRange(1, 3); i++) {
+        enemies.push(new Squishy(centerX, centerY, 20, _utils2.default.randomColor(colors), false));
     }
+    console.log(enemies);
+}
+
+function init() {
+    ship = [];
+    var startingYCoord = centerY + Math.cos(0) * 180;
+    ship.push(new Particle(centerX, startingYCoord, 10, "red"));
+    console.log(ship);
 }
 
 // Animation Loop
@@ -163,12 +277,25 @@ function animate() {
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
 
-    c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y);
-    // objects.forEach(object => {
-    //  object.update();
-    // });
+    //Move enemies
+    enemies.forEach(function (enemy) {
+        enemy.update();
+        enemy.checkBoundary();
+        if (enemy.isTrue == true) {
+            enemies.splice(enemies.indexOf(enemy), 1);
+            console.log(enemies);
+        }
+
+        if (enemies.length == 0) {
+            setTimeout(initEnemies(), 200);
+        }
+    });
+    //create one particle
+    ship[0].update();
 }
 
+//the very first wave of enemies and your particle
+initEnemies();
 init();
 animate();
 
@@ -185,7 +312,8 @@ animate();
 
 
 function randomIntFromRange(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
+    var number = Math.random() * (max - min + 1) + min;
+    return number.toFixed(1);
 }
 
 function randomColor(colors) {
