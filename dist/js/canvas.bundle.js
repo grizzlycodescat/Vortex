@@ -86,6 +86,28 @@
 /************************************************************************/
 /******/ ({
 
+/***/ "./src/assets/images/alien.png":
+/*!*************************************!*\
+  !*** ./src/assets/images/alien.png ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "/public/icons/alien.png";
+
+/***/ }),
+
+/***/ "./src/assets/images/coin.png":
+/*!************************************!*\
+  !*** ./src/assets/images/coin.png ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "/public/icons/coin.png";
+
+/***/ }),
+
 /***/ "./src/canvas.js":
 /*!***********************!*\
   !*** ./src/canvas.js ***!
@@ -100,10 +122,19 @@ var _utils = __webpack_require__(/*! ./utils */ "./src/utils.js");
 
 var _utils2 = _interopRequireDefault(_utils);
 
+var _alien = __webpack_require__(/*! ./assets/images/alien.png */ "./src/assets/images/alien.png");
+
+var _alien2 = _interopRequireDefault(_alien);
+
+var _coin = __webpack_require__(/*! ./assets/images/coin.png */ "./src/assets/images/coin.png");
+
+var _coin2 = _interopRequireDefault(_coin);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var canvas = document.querySelector('canvas');
 var c = canvas.getContext('2d');
+
 // const video = document.getElementById('video');
 
 canvas.width = window.innerWidth;
@@ -118,6 +149,21 @@ var mouse = {
 };
 
 var colors = ['#2185C5', '#7ECEFD', '#FFF6E5', '#FF7F66'];
+
+var ALIEN = new Image();
+ALIEN.src = _alien2.default;
+
+var COIN_IMG = new Image();
+COIN_IMG.src = _coin2.default;
+
+var COIN_SPRITE = new Sprite({
+    context: c,
+    width: 1000,
+    height: 1000,
+    image: COIN_IMG,
+    numberOfFrames: 10,
+    ticksPerFrame: 6
+});
 
 // Event Listeners
 
@@ -145,6 +191,10 @@ addEventListener("keydown", function (event) {
     }
 });
 
+addEventListener("keyup", function (event) {
+    d = "";
+});
+
 addEventListener('resize', function () {
     canvas.width = innerWidth;
     canvas.height = innerHeight;
@@ -163,6 +213,8 @@ function Particle(x, y, radius, color) {
     this.radians = 0;
     this.cosRadians = Math.PI;
     this.velocity = 0.07;
+    this.spriteX = 0;
+    this.spriteY = 0;
 
     this.draw = function () {
         c.beginPath();
@@ -170,6 +222,9 @@ function Particle(x, y, radius, color) {
         c.fillStyle = _this.color;
         c.fill();
         c.closePath();
+        _this.spriteX = _this.x - (ALIEN.width - _this.radius) / 2;
+        _this.spriteY = _this.y - (ALIEN.height - _this.radius) / 2;
+        c.drawImage(ALIEN, _this.spriteX, _this.spriteY);
     };
 
     //Move point using mouse
@@ -183,7 +238,8 @@ function Particle(x, y, radius, color) {
     //     // console.log(Math.cos(this.radians) * 100);
 
     //     this.draw()
-    // }
+    // }†
+
 
     //Point moves on its own
     // this.update = () => {
@@ -235,6 +291,7 @@ function Squishy(x, y, radius, color, isOutOfBounds) {
         c.fillStyle = _this2.color;
         c.fill();
         c.closePath();
+        COIN_SPRITE.draw();
     };
 
     //linear movement along x,y
@@ -242,6 +299,10 @@ function Squishy(x, y, radius, color, isOutOfBounds) {
         _this2.x += _this2.radiansX * _this2.velocity;
         _this2.y += _this2.radiansY * _this2.velocity;
         _this2.draw();
+        COIN_SPRITE.update();
+        COIN_SPRITE.x = _this2.x;
+        COIN_SPRITE.y = _this2.y;
+        COIN_SPRITE.scaleRatio += 1;
     };
 
     this.checkBoundary = function () {
@@ -253,8 +314,72 @@ function Squishy(x, y, radius, color, isOutOfBounds) {
     };
 }
 
+//Score
+function scoreKeeper(width, font, posX, posY, text) {
+    var _this3 = this;
+
+    this.width = width;
+    this.x = posX;
+    this.y = posY;
+    this.font = font;
+    this.text = text;
+
+    this.draw = function () {
+        c.font = _this3.width + " " + _this3.font;
+        c.fillStyle = "red";
+        c.fillText(_this3.text, _this3.x, _this3.y);
+    };
+
+    this.update = function () {
+        _this3.text = _this3.text + 1;
+
+        _this3.draw();
+    };
+}
+
+//sprite animation
+function Sprite(options) {
+    var _this4 = this;
+
+    this.context = options.context;
+    this.width = options.width;
+    this.height = options.height;
+    this.image = options.image;
+    this.frameIndex = 0;
+    this.tickCount = 0;
+    this.x = 0;
+    this.y = 0;
+    this.ticksPerFrame = options.ticksPerFrame || 0;
+    this.numberOfFrames = options.numberOfFrames || 1;
+    this.scaleRatio = 0.1;
+
+    this.draw = function () {
+        _this4.context.drawImage(_this4.image, _this4.frameIndex * _this4.width / _this4.numberOfFrames, 0, _this4.width / _this4.numberOfFrames, _this4.height, _this4.x, _this4.y, _this4.width / _this4.numberOfFrames, _this4.height);
+    };
+
+    this.update = function () {
+        _this4.tickCount += 1;
+        if (_this4.tickCount > _this4.ticksPerFrame) {
+            _this4.tickCount = 0;
+            if (_this4.scaleRatio > 1) {
+                _this4.scaleRatio = 0;
+            }
+            // If the current frame index is in range
+            if (_this4.frameIndex < _this4.numberOfFrames - 1) {
+                // Go to the next frame
+                _this4.frameIndex += 1;
+            } else {
+                _this4.frameIndex = 0;
+            }
+        }
+    };
+
+    return this;
+}
+
 // Implementation for user's and enemy's cigarette squishy things
 var ship = void 0,
+    scoreBoard = void 0,
     enemies = void 0;
 
 function initEnemies() {
@@ -266,28 +391,49 @@ function initEnemies() {
 }
 
 function init() {
+    scoreBoard = new scoreKeeper("20px", "Consolas", 600, 50, 0);
     ship = [];
     var startingYCoord = centerY + Math.cos(0) * 180;
     ship.push(new Particle(centerX, startingYCoord, 10, "red"));
     console.log(ship);
 }
 
+//collision detection
+function getDistance(x1, y1, x2, y2) {
+    var xDistance = x2 - x1;
+    var yDistance = y2 - y1;
+
+    return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
+}
 // Animation Loop
 function animate() {
+    scoreBoard.draw();
+
     requestAnimationFrame(animate);
     c.clearRect(0, 0, canvas.width, canvas.height);
 
     //Move enemies
     enemies.forEach(function (enemy) {
+        scoreBoard.draw();
         enemy.update();
         enemy.checkBoundary();
         if (enemy.isTrue == true) {
             enemies.splice(enemies.indexOf(enemy), 1);
-            console.log(enemies);
+            // console.log(enemies);
         }
 
         if (enemies.length == 0) {
             setTimeout(initEnemies(), 200);
+        }
+
+        //collision detection
+
+        //check enemy color
+        if (enemy.color == "#2185C5") {
+            if (getDistance(enemy.x, enemy.y, ship[0].x, ship[0].y) < enemy.radius + ship[0].radius) {
+                enemy.color = "#FF00FF";
+                scoreBoard.update();
+            }
         }
     });
     //create one particle

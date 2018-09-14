@@ -27,6 +27,10 @@ module.exports = {
             {
                 test: /\.mp4$/,
                 loader: 'url-loader?limit=10000&mimetype=video/mp4'
+            },
+            {
+                test: /\.(jpe?g|png|gif|svg)$/i, 
+                loader: "file-loader?name=/public/icons/[name].[ext]"
             }
         ]
     },
