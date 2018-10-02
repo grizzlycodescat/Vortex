@@ -32,8 +32,8 @@ const COIN_SPRITE = new Sprite({
     width:1000,
     height:1000,
     image: COIN_IMG,
-    numberOfFrames: 10,
-    ticksPerFrame: 6
+    numberOfFrames: 1,
+    ticksPerFrame: 10
 })
 
 // Event Listeners
